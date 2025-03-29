@@ -1,0 +1,47 @@
+services:
+  frontend:
+    build: ./frontend
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    working_dir: /app
+    command: ["sh", "-c", "npm install && npm start"]
+    depends_on:
+      - backend
+
+  backend:
+    build: ./backend
+    volumes:
+      - ./backend:/var/www/html
+    working_dir: /var/www/html
+    depends_on:
+      - db
+    env_file:
+      - .env  # 使用 .env 檔案的變數
+    expose:
+      - "9000"  # 讓 Nginx 透過 port 9000 連接 PHP-FPM
+
+  nginx:
+    image: nginx:latest
+    ports:
+      - "8000:80"
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf
+      - ./backend:/var/www/html
+    depends_on:
+      - backend
+
+  db:
+    image: mysql:8.0
+    restart: always
+    env_file:
+      - .env  # 使用 .env 檔案的變數
+    ports:
+      - "3307:3306" # 因為本機也有 MySQL，所以將 Docker MySQL 的 Port 改用 3307
+    volumes:
+      - mysql_data:/var/lib/mysql
+
+volumes:
+  mysql_data:
