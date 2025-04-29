@@ -15,5 +15,3 @@ Route::get('/db-test', function () {
         return "❌ 錯誤：" . $e->getMessage();
     }
 });
-
-Route::get('/users', [UserController::class, 'search']);
